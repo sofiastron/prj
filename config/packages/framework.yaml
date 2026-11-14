@@ -1,0 +1,25 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    http_method_override: false
+    handle_all_throwables: true
+    csrf_protection: true
+    session:
+        cookie_secure: auto
+        cookie_samesite: lax
+    php_errors:
+        log: true
+    http_client:
+        scoped_clients:
+            off.client:
+                base_uri: '%env(OFF_BASE_URI)%'
+                timeout: 5
+                max_duration: 8
+                headers:
+                    User-Agent: 'RestoManager/1.0 (PFE challenge EMC)'
+                    Accept: 'application/json'
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

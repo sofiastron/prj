@@ -40,7 +40,7 @@ class Inventory
     /** Valeur totale des écarts (MAD) : négatif = manque. */
     public function totalVarianceValue(): string
     {
-        $t = '0';
+        $t = '0.00';
         foreach ($this->lines as $l) {
             if (null !== $l->varianceValue) {
                 $t = Decimal::add($t, $l->varianceValue, 2);

@@ -12,3 +12,19 @@ services:
             - '../src/Enum/'
             - '../src/Exception/'
             - '../src/Kernel.php'
+            # objets-valeurs / utilitaires : ce ne sont pas des services
+            - '../src/Service/Decimal.php'
+            - '../src/Service/AllergenReport.php'
+
+when@test:
+    services:
+        # Les tests récupèrent les services métier directement dans le conteneur.
+        _defaults:
+            autowire: true
+            autoconfigure: true
+        App\Service\:
+            resource: '../src/Service/'
+            exclude:
+                - '../src/Service/Decimal.php'
+                - '../src/Service/AllergenReport.php'
+            public: true

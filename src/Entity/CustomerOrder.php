@@ -55,7 +55,7 @@ class CustomerOrder
     /** Montant TTC à payer (plats annulés exclus). */
     public function total(): string
     {
-        $total = '0';
+        $total = '0.00';
         foreach ($this->lines as $line) {
             if (LineStatus::CANCELLED !== $line->status) {
                 $total = Decimal::add($total, Decimal::mul($line->unitPrice, (string) $line->quantity, 2), 2);

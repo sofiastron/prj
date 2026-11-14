@@ -42,7 +42,7 @@ class PurchaseOrder
 
     public function total(): string
     {
-        $t = '0';
+        $t = '0.00';
         foreach ($this->lines as $l) {
             $t = Decimal::add($t, $l->total(), 2);
         }

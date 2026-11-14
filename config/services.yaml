@@ -15,6 +15,7 @@ services:
             # objets-valeurs / utilitaires : ce ne sont pas des services
             - '../src/Service/Decimal.php'
             - '../src/Service/AllergenReport.php'
+            - '../src/Service/OffProduct.php'
 
 when@test:
     services:
@@ -27,4 +28,5 @@ when@test:
             exclude:
                 - '../src/Service/Decimal.php'
                 - '../src/Service/AllergenReport.php'
+                - '../src/Service/OffProduct.php'
             public: true

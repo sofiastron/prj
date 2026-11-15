@@ -10,7 +10,7 @@ Symfony 7.4 · PHP 8.3 · MySQL 8 · Doctrine ORM/Migrations · Twig.
 | Niveau | État | Où le voir |
 |---|---|---|
 | 1 — Modéliser | ✅ | `docs/MODELE.md`, `migrations/`, `src/DataFixtures/` (23 plats, 61 ingrédients, 6 fournisseurs, 5 préparations dont une imbriquée, 2 menus, 14 jours d'historique), back-office `/admin/*` |
-| 2 — Règles | ✅ | `src/Service/` ; 68 tests dans `tests/` |
+| 2 — Règles | ✅ | `src/Service/` ; 69 tests dans `tests/` |
 | 3 — Produit | ✅ | rôles serveur/cuisine/gérant, salle, cuisine, tableau de bord |
 | 4 — API externe | ✅ (testé sur réponses simulées) | Open Food Facts, allergènes sur la carte publique `/carte` |
 | 5 — Livrer | ✅ écrit, ⚠️ Docker non exécuté ici | `Dockerfile`, `docker-compose.yml`, `INSTALL.md` |

@@ -2,7 +2,7 @@
 
 Deux façons de lancer l'application : **Docker (recommandé, une commande)** ou **en local** (PHP + MySQL installés).
 
-> ⚠️ Honnêteté sur les tests : le projet a été développé et testé (68 tests) avec PHP 8.3 et MySQL 8.0 directement installés. Les fichiers Docker (`Dockerfile`, `docker-compose.yml`, `docker/entrypoint.sh`) ont été écrits avec soin mais **n'ont pas pu être exécutés** dans l'environnement de développement (pas de Docker disponible). Si une étape échoue, voyez « Dépannage » ci-dessous.
+> ⚠️ Honnêteté sur les tests : le projet a été développé et testé (69 tests) avec PHP 8.3 et MySQL 8.0 directement installés. Les fichiers Docker (`Dockerfile`, `docker-compose.yml`, `docker/entrypoint.sh`) ont été écrits avec soin mais **n'ont pas pu être exécutés** dans l'environnement de développement (pas de Docker disponible). Si une étape échoue, voyez « Dépannage » ci-dessous.
 
 ## Option A — Docker
 

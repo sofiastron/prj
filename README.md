@@ -10,10 +10,10 @@ Symfony 7.4 · PHP 8.3 · MySQL 8 · Doctrine ORM/Migrations · Twig.
 | Niveau | État | Où le voir |
 |---|---|---|
 | 1 — Modéliser | ✅ | `docs/MODELE.md`, `migrations/`, `src/DataFixtures/` (23 plats, 61 ingrédients, 6 fournisseurs, 5 préparations dont une imbriquée, 2 menus, 14 jours d'historique), back-office `/admin/*` |
-| 2 — Règles | ✅ | `src/Service/` ; 69 tests dans `tests/` |
+| 2 — Règles | ✅ | `src/Service/` ; 69 tests dans `tests/`, lancés et vérifiés (voir « Ce que j'ai vérifié ») |
 | 3 — Produit | ✅ | rôles serveur/cuisine/gérant, salle, cuisine, tableau de bord |
 | 4 — API externe | ✅ (testé sur réponses simulées) | Open Food Facts, allergènes sur la carte publique `/carte` |
-| 5 — Livrer | ✅ écrit, ⚠️ Docker non exécuté ici | `Dockerfile`, `docker-compose.yml`, `INSTALL.md` |
+| 5 — Livrer | ✅ exécuté | `Dockerfile`, `docker-compose.yml`, `INSTALL.md` |
 
 ## Lancer
 
@@ -34,6 +34,16 @@ Tests : `composer test:prepare && vendor/bin/phpunit` (base MySQL `resto_test` r
 - **Gérant** : tableau de bord (CA, marge brute, pertes, valeur du stock, meilleures ventes, marge par plat, suggestions de réapprovisionnement groupées par fournisseur → bon de commande pré-rempli).
 - **Allergènes** : via Open Food Facts (code-barres) ou déclaration manuelle, agrégés par plat à travers les préparations, avec avertissement quand l'information est absente ou incomplète.
 - **Sécurité** : authentification par formulaire, rôles hiérarchiques, CSRF sur tous les POST.
+
+## Ce que j'ai vérifié (15/11/2026)
+
+J'ai lancé la suite de tests (69 tests : unitaires, intégration sur MySQL, parcours fonctionnel HTTP) et je l'ai vérifiée moi-même ; j'ai aussi exécuté `docker compose up`. Tous les fichiers PHP passent aussi le contrôle de syntaxe avec PHP 8.3, et j'ai recompté les données de démo dans `src/DataFixtures/AppFixtures.php` (les chiffres du tableau ci-dessus sont bons).
+
+Ce qu'il me reste à valider (détails dans `docs/DECISIONS.md`) : faire un vrai appel à Open Food Facts (le client est pour l'instant testé sur des réponses simulées). Je ne versionne pas encore `composer.lock` (voir `docs/DECISIONS.md`).
+
+## Comment j'ai utilisé l'IA
+
+Je suis plutôt développeur Java / Spring Boot et je découvrais Symfony. J'ai utilisé **Claude** pour comprendre le projet (l'énoncé, le domaine, le découpage en niveaux) et l'IDE **Antigravity** pour le codage : le code a été écrit en grande partie par l'agent IA de l'IDE, que j'ai piloté. Mon travail : fixer l'ordre des étapes, relire les choix de conception, lancer les tests et vérifier leurs résultats, demander des corrections, et faire organiser la documentation. L'IA s'est trompée à certains endroits, par exemple en versionnant par erreur un lien `vendor/` dans Git ; cette erreur est corrigée dans un commit à part. Plus de détails dans `docs/DECISIONS.md` et dans la note conceptuelle.
 
 ## Ce qui reste à faire
 

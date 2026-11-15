@@ -6,3 +6,4 @@
 /public/bundles/
 .idea/
 .vscode/
+/composer.lock

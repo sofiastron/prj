@@ -172,8 +172,8 @@ class StockService
             $ingredients[$need['ingredient']->id] = $need['ingredient'];
         }
         ksort($ingredients);
-        // Écrire avant de relire : refresh() écraserait sinon les modifications non encore flushées
-        // (ex. deux plats d'un même menu qui consomment le même ingrédient).
+        // Par prudence : écrire avant de relire, car refresh() écraserait des modifications non encore
+        // flushées si un appelant enchaînait des opérations sans transaction imbriquée.
         $this->em->flush();
         foreach ($ingredients as $ingredient) {
             // SELECT … FOR UPDATE puis relecture : la valeur en mémoire peut être périmée.

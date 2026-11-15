@@ -312,6 +312,37 @@ class StockRulesTest extends IntegrationTestCase
         $this->assertSame('4850.000', $this->em->find(\App\Entity\Ingredient::class, $a->id)->stockQuantity);
     }
 
+    /** Régression : deux plats d'un même menu qui consomment le MÊME ingrédient ne doivent pas se « marcher dessus ». */
+    public function testMenuDishesSharingAnIngredientAreBothDeducted(): void
+    {
+        $oil = $this->ingredient('Huile', Dimension::VOLUME, '1000');
+        $a = $this->dish('Entrée huilée', '20.00', [[$oil, '100', Unit::ML]]);
+        $b = $this->dish('Plat huilé', '40.00', [[$oil, '200', Unit::ML]]);
+        $menu = new Menu();
+        $menu->name = 'Duo';
+        $menu->price = '50.00';
+        foreach ([['Entrée', 1, $a], ['Plat', 2, $b]] as [$label, $pos, $dish]) {
+            $course = new MenuCourse();
+            $course->menu = $menu;
+            $course->label = $label;
+            $course->position = $pos;
+            $course->dishes->add($dish);
+            $menu->courses->add($course);
+        }
+        $this->em->persist($menu);
+        $this->em->flush();
+        $choices = [];
+        foreach ($menu->courses as $c) {
+            $choices[$c->id] = $c->dishes->first()->id;
+        }
+        $order = $this->orders->open($this->table(), $this->user());
+
+        $this->orders->addMenu($order, $menu, $choices);
+
+        $this->assertSame('700.000', $this->refresh($oil)->stockQuantity, '1000 - 100 - 200');
+        $this->assertSame(2, $this->em->getRepository(StockMovement::class)->count(['type' => MovementType::SALE]));
+    }
+
     public function testMenuRejectsADishThatIsNotOneOfTheCourseChoices(): void
     {
         $a = $this->ingredient('Salade', Dimension::MASS, '5000');

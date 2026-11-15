@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% block title %}Achats · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Achats fournisseurs</h1>
+<form class="inline" method="post" action="{{ path('admin_purchase_new') }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+<select name="supplier" required><option value="">Fournisseur…</option>{% for s in suppliers %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select> <button>+ Nouveau bon de commande</button></form></div>
+<table>
+    <tr><th>N°</th><th>Fournisseur</th><th>Statut</th><th class="r">Lignes</th><th class="r">Total HT</th><th>Créé le</th><th></th></tr>
+    {% for p in purchases %}
+    <tr><td>#{{ p.id }}</td><td>{{ p.supplier.name }}</td>
+        <td><span class="badge {{ p.status.value == 'received' ? 'ok' : (p.status.value == 'cancelled' ? 'bad' : 'warn') }}">{{ p.status.label }}</span></td>
+        <td class="r">{{ p.lines|length }}</td><td class="r">{{ p.total|money }}</td><td>{{ p.createdAt|date('d/m/Y H:i') }}</td>
+        <td class="r"><a href="{{ path('admin_purchase', {id: p.id}) }}">Ouvrir</a></td></tr>
+    {% else %}<tr><td colspan="7" class="muted">Aucun achat.</td></tr>{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block title %}Salle · Resto Manager{% endblock %}
+{% block body %}
+<h1>Salle</h1>
+<div class="grid g4">
+{% for t in tables %}
+    {% set o = open[t.id] ?? null %}
+    {% if o %}
+        <a class="tile busy" href="{{ path('service_order', {id: o.id}) }}">
+            <h3>{{ t.label }}</h3>
+            <div class="muted small">{{ t.seats }} places · {{ o.covers }} couverts</div>
+            <div class="mt"><strong>{{ o.total|money }}</strong></div>
+            <div class="small muted">{{ o.server.displayName }}</div>
+        </a>
+    {% else %}
+        <form class="tile" method="post" action="{{ path('service_table_open', {id: t.id}) }}">
+            <h3>{{ t.label }}</h3>
+            <div class="muted small">{{ t.seats }} places · libre</div>
+            <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+            <div class="mt"><input type="number" name="covers" value="2" min="1" max="20" style="width:4rem" aria-label="Couverts"> <button class="sm" type="submit">Ouvrir</button></div>
+        </form>
+    {% endif %}
+{% endfor %}
+</div>
+{% endblock %}

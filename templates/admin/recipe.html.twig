@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ title }} · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><a href="{{ path(kind == 'dish' ? 'admin_dishes' : 'admin_preparations') }}">← Retour</a><h1 style="margin:0">{{ title }}</h1></div>
+<div class="grid g2">
+<div>
+    <div class="card">
+        {{ form_start(form) }}{{ form_widget(form) }}<p><button type="submit">Enregistrer</button></p>{{ form_end(form) }}
+    </div>
+    {% if kind == 'dish' and owner.id %}
+    <div class="card">
+        <h3>Analyse</h3>
+        {% if info.error %}<div class="flash error">{{ info.error }}</div>{% else %}
+        <p>Coût matière par portion : <strong>{{ info.cost|money }}</strong> — prix HT {{ owner.priceExclVat|money }}
+        {% set m = owner.priceExclVat - info.cost %}→ marge <strong class="{{ m < 0 ? 'neg' : 'pos' }}">{{ m|money }}</strong>{% if owner.priceExclVat > 0 %} ({{ (m / owner.priceExclVat * 100)|round(1) }} %){% endif %}</p>
+        <p>Disponibilité : {% if info.max >= 9999 %}illimitée{% elseif info.max == 0 %}<span class="badge bad">rupture</span> manque : {% for i in info.missing %}{{ i.name }}{{ not loop.last ? ', ' : '' }}{% endfor %}{% else %}{{ info.max }} portion(s){% endif %}</p>
+        <p>Allergènes :
+            {% for a in info.report.allergens %}<span class="badge al">{{ a.label }}</span>{% else %}<span class="muted">aucun déclaré</span>{% endfor %}
+            {% for a in info.report.traces %}<span class="badge tr">traces : {{ a.label }}</span>{% endfor %}
+            {% if not info.report.complete %}<br><span class="badge warn">⚠ Information incomplète pour : {{ info.report.unreliableSources|join(', ') }}</span>{% endif %}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+<div>
+{% if owner.id %}
+    <h2 style="margin-top:0">Recette{% if kind == 'preparation' %} <span class="muted small">(pour {{ owner.yieldQuantity|num(3) }} {{ owner.yieldUnit.label }})</span>{% else %} <span class="muted small">(pour 1 portion)</span>{% endif %}</h2>
+    <table>
+        <tr><th>Composant</th><th class="r">Quantité</th><th></th></tr>
+        {% for l in owner.lines %}
+        <tr>
+            <td>{% if l.hasPreparation %}<span class="badge">préparation</span> {% endif %}{{ l.component.name }}</td>
+            <td class="r">{{ l.quantity|num(3) }} {{ l.unit.label }}</td>
+            <td class="r"><form class="inline" method="post" action="{{ path('admin_recipe_line_delete', {kind: kind, id: l.id}) }}" onsubmit="return confirm('Supprimer cette ligne ?')"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm sec">✕</button></form></td>
+        </tr>
+        {% else %}<tr><td colspan="3" class="muted">Recette vide.</td></tr>{% endfor %}
+    </table>
+    <form class="card mt" method="post" action="{{ path('admin_recipe_line_add', {kind: kind, id: owner.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+        <div class="formrow">
+            <div><label>Composant</label>
+                <select name="component" required>
+                    <option value="">—</option>
+                    <optgroup label="Ingrédients">{% for i in ingredients %}<option value="i:{{ i.id }}">{{ i.name }} ({{ i.dimension.baseUnit.label }})</option>{% endfor %}</optgroup>
+                    {% if preparations %}<optgroup label="Préparations">{% for p in preparations %}<option value="p:{{ p.id }}">{{ p.name }} ({{ p.yieldUnit.dimension.baseUnit.label }})</option>{% endfor %}</optgroup>{% endif %}
+                </select></div>
+            <div><label>Quantité</label><input type="text" inputmode="decimal" name="quantity" size="7" required></div>
+            <div><label>Unité</label><select name="unit">{% for u in units %}<option value="{{ u.value }}">{{ u.label }}</option>{% endfor %}</select></div>
+            <button type="submit">Ajouter</button>
+        </div>
+        <p class="muted small">L'unité doit correspondre au composant (g/kg pour une masse, ml/cl/l pour un volume, pce pour des pièces).</p>
+    </form>
+{% else %}
+    <div class="card muted">Enregistrez d'abord pour pouvoir saisir la recette.</div>
+{% endif %}
+</div>
+</div>
+{% endblock %}

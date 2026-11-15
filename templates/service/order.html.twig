@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+{% block title %}Commande {{ order.table.label }} · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions">
+    <a href="{{ path('service_tables') }}">← Salle</a>
+    <h1 style="margin:0">Table {{ order.table.label }}</h1>
+    <span class="badge">{{ order.covers }} couverts</span><span class="badge {{ order.open ? 'warn' : 'ok' }}">{{ order.status.label }}</span>
+</div>
+
+<div class="grid g2">
+<div>
+    <h2>Commande</h2>
+    <table>
+        <tr><th>Plat</th><th class="r">Qté</th><th class="r">Prix</th><th>Statut</th><th></th></tr>
+        {% for l in order.lines %}
+        <tr class="{{ l.status.value == 'cancelled' ? 'unavail' : '' }}">
+            <td>{{ l.dishName }}{% if l.orderMenu %} <span class="badge">{{ l.orderMenu.menuName }}</span>{% endif %}{% if l.note %}<br><span class="muted small">📝 {{ l.note }}</span>{% endif %}</td>
+            <td class="r">{{ l.quantity }}</td>
+            <td class="r">{{ (l.unitPrice * l.quantity)|money }}</td>
+            <td><span class="badge {{ l.status.value == 'ready' ? 'ok' : (l.status.value == 'served' ? '' : (l.status.value == 'cancelled' ? 'bad' : 'warn')) }}">{{ l.status.label }}</span></td>
+            <td class="r">
+                {% if order.open %}
+                    {% if l.status.value == 'ready' %}
+                        <form class="inline" method="post" action="{{ path('service_line', {id: l.id, action: 'serve'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm ok">Servir</button></form>
+                    {% endif %}
+                    {% if l.status.isActive %}
+                        <form class="inline" method="post" action="{{ path('service_line', {id: l.id, action: 'cancel'}) }}" onsubmit="return confirm('Annuler ce plat ?{{ l.status.value != 'pending' ? ' Il est déjà lancé en cuisine : les ingrédients seront comptés perdus.' : '' }}')"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm sec">Annuler</button></form>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}<tr><td colspan="5" class="muted">Aucun plat pour l'instant.</td></tr>{% endfor %}
+        <tr><th colspan="2">Total TTC</th><th class="r">{{ order.total|money }}</th><th colspan="2"></th></tr>
+    </table>
+    {% if order.open %}
+    <div class="actions">
+        <form class="inline" method="post" action="{{ path('service_order_pay', {id: order.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="ok">Encaisser</button></form>
+        <form class="inline" method="post" action="{{ path('service_order_cancel', {id: order.id}) }}" onsubmit="return confirm('Annuler la commande ?')"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sec">Annuler la commande</button></form>
+    </div>
+    {% endif %}
+</div>
+
+{% if order.open %}
+<div>
+    <h2>Ajouter</h2>
+    {% for mm in menus|filter(m => m.available) %}
+    <div class="card">
+        <form method="post" action="{{ path('service_order_menu', {id: order.id}) }}">
+            <h3>{{ mm.menu.name }} — {{ mm.menu.price|money }}</h3>
+            <input type="hidden" name="_token" value="{{ csrf_token('app') }}"><input type="hidden" name="menu" value="{{ mm.menu.id }}">
+            {% for c in mm.courses %}
+                <div class="formrow" style="margin:.3rem 0"><label style="min-width:5.5rem">{{ c.course.label }}</label>
+                    <select name="choice[{{ c.course.id }}]" required>{% for d in c.dishes %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select></div>
+            {% endfor %}
+            <button class="sm" type="submit">Commander le menu</button>
+        </form>
+    </div>
+    {% endfor %}
+    {% for s in sections %}
+        <h3 class="mt">{{ s.category.label }}s</h3>
+        <table>
+        {% for it in s.items %}
+            <tr class="{{ it.available ? '' : 'unavail' }}">
+                <td>{{ it.dish.name }}<br><span class="muted small">{{ it.dish.price|money }}{% if it.available and it.max < 6 %} · reste {{ it.max }}{% endif %}</span></td>
+                <td class="r">
+                {% if it.available %}
+                    <form class="inline" method="post" action="{{ path('service_order_dish', {id: order.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('app') }}"><input type="hidden" name="dish" value="{{ it.dish.id }}">
+                        <input type="number" name="quantity" value="1" min="1" max="{{ min(it.max, 20) }}" style="width:3.8rem" aria-label="Quantité">
+                        <input type="text" name="note" placeholder="Note" maxlength="250" style="width:7rem">
+                        <button class="sm" type="submit">+</button>
+                    </form>
+                {% else %}<span class="badge bad" title="Manque : {{ it.missing|join(', ') }}">Indisponible</span><br><span class="muted small">manque : {{ it.missing|join(', ') }}</span>{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% endfor %}
+</div>
+{% endif %}
+</div>
+{% endblock %}

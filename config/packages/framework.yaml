@@ -2,7 +2,15 @@ framework:
     secret: '%env(APP_SECRET)%'
     http_method_override: false
     handle_all_throwables: true
+    default_locale: fr
     csrf_protection: true
+    # Fonctionnalités activées explicitement (ne dépend pas de l'auto-détection)
+    assets: true
+    form: true
+    validation: true
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+        fallbacks: ['fr']
     session:
         cookie_secure: auto
         cookie_samesite: lax

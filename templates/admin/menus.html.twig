@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+{% block title %}Menus · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Menus</h1><a class="btn" href="{{ path('admin_menu_new') }}">+ Nouveau menu</a></div>
+<p class="muted">Un menu est une formule à prix fixe (ex. entrée + plat + dessert au choix) : ce n'est pas un plat, il ne consomme aucun stock par lui-même.</p>
+<table>
+    <tr><th>Menu</th><th class="r">Prix TTC</th><th>Composition</th><th>État</th><th></th></tr>
+    {% for r in rows %}
+    <tr>
+        <td>{{ r.menu.name }}</td><td class="r">{{ r.menu.price|money }}</td>
+        <td class="small">{% for c in r.menu.courses %}<strong>{{ c.label }}</strong> ({{ c.dishes|length }} choix){{ not loop.last ? ' · ' : '' }}{% endfor %}</td>
+        <td>{% if not r.menu.active %}<span class="badge">retiré</span>{% elseif r.available %}<span class="badge ok">disponible</span>{% else %}<span class="badge bad">indisponible</span>{% endif %}</td>
+        <td class="r"><a href="{{ path('admin_menu_edit', {id: r.menu.id}) }}">Modifier</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+{% block title %}Inventaires · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Inventaires physiques</h1>
+<form class="inline" method="post" action="{{ path('admin_inventory_start') }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button>Démarrer un inventaire</button></form></div>
+<table>
+    <tr><th>N°</th><th>Date</th><th>Statut</th><th class="r">Écart total (valeur)</th><th></th></tr>
+    {% for i in inventories %}
+    <tr><td>#{{ i.id }}</td><td>{{ i.createdAt|date('d/m/Y H:i') }}</td><td><span class="badge {{ i.status.value == 'validated' ? 'ok' : 'warn' }}">{{ i.status.label }}</span></td>
+        <td class="r">{% if i.status.value == 'validated' %}<span class="{{ i.totalVarianceValue < 0 ? 'neg' : 'pos' }}">{{ i.totalVarianceValue|money }}</span>{% else %}—{% endif %}</td>
+        <td class="r"><a href="{{ path('admin_inventory', {id: i.id}) }}">Ouvrir</a></td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Aucun inventaire.</td></tr>{% endfor %}
+</table>
+{% endblock %}

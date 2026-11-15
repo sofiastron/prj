@@ -50,4 +50,14 @@ class DishLine implements RecipeLineInterface
     {
         return $this->unit;
     }
+
+    public function getComponent(): Ingredient|Preparation|null
+    {
+        return $this->getIngredient() ?? $this->getPreparation();
+    }
+
+    public function hasPreparation(): bool
+    {
+        return null !== $this->getPreparation();
+    }
 }

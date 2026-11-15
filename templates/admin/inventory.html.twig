@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+{% block title %}Inventaire #{{ inventory.id }} · Resto Manager{% endblock %}
+{% block body %}
+{% set draft = inventory.status.value == 'draft' %}
+<div class="actions"><a href="{{ path('admin_inventories') }}">← Inventaires</a><h1 style="margin:0">Inventaire #{{ inventory.id }}</h1><span class="badge {{ draft ? 'warn' : 'ok' }}">{{ inventory.status.label }}</span></div>
+{% if draft %}<p class="muted">Saisissez ce que vous avez compté. Laissez vide les ingrédients non comptés : ils ne seront pas modifiés. À la validation, l'écart est calculé par rapport au stock du moment.</p>{% endif %}
+<form method="post" action="{{ path('admin_inventory_count', {id: inventory.id}) }}">
+<input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+<table>
+    <tr><th>Ingrédient</th><th class="r">Théorique</th>{% if draft %}<th>Compté</th>{% else %}<th class="r">Compté</th><th class="r">Écart</th><th class="r">Valeur</th>{% endif %}</tr>
+    {% for l in lines %}
+    <tr>
+        <td>{{ l.ingredient.name }}</td>
+        <td class="r">{{ l.theoreticalQuantity|qty(l.ingredient) }}</td>
+        {% if draft %}
+        <td>
+            {% set base = l.ingredient.dimension.baseUnit %}
+            {% set big = l.ingredient.dimension.value == 'mass' ? 'kg' : (l.ingredient.dimension.value == 'volume' ? 'l' : 'pce') %}
+            <input name="qty[{{ l.id }}]" inputmode="decimal" size="8" value="{{ l.countedQuantity is not null ? (l.countedQuantity / (big == 'kg' or big == 'l' ? 1000 : 1))|round(3) : '' }}">
+            <select name="unit[{{ l.id }}]">
+                {% for u in l.ingredient.dimension.units %}<option value="{{ u.value }}" {{ u.value == big ? 'selected' : '' }}>{{ u.label }}</option>{% endfor %}
+            </select>
+        </td>
+        {% else %}
+        <td class="r">{{ l.countedQuantity is not null ? l.countedQuantity|qty(l.ingredient) : '—' }}</td>
+        <td class="r">{% if l.variance is not null %}<span class="{{ l.variance < 0 ? 'neg' : (l.variance > 0 ? 'pos' : '') }}">{{ l.variance > 0 ? '+' : '' }}{{ l.variance|qty(l.ingredient) }}</span>{% else %}—{% endif %}</td>
+        <td class="r">{{ l.varianceValue is not null ? l.varianceValue|money : '—' }}</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    {% if not draft %}<tr><th colspan="4">Valeur totale des écarts</th><th class="r">{{ inventory.totalVarianceValue|money }}</th></tr>{% endif %}
+</table>
+{% if draft %}
+<div class="actions"><button type="submit">Enregistrer les comptages</button>
+<button class="ok" type="submit" name="validate" value="1" onclick="return confirm('Valider : le stock sera recalé sur les quantités comptées.')">Enregistrer et valider</button>
+<button class="sec" type="submit" formaction="{{ path('admin_inventory_discard', {id: inventory.id}) }}" formnovalidate onclick="return confirm('Supprimer cet inventaire ?')">Supprimer</button></div>
+{% endif %}
+</form>
+{% endblock %}

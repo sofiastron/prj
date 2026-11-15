@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion · Resto Manager{% endblock %}
+{% block body %}
+<div class="login card">
+    <h1>Connexion</h1>
+    {% if error %}<div class="flash error">Identifiants invalides.</div>{% endif %}
+    <form method="post">
+        <div><label for="u">E-mail</label><input id="u" type="email" name="_username" value="{{ last }}" required autofocus autocomplete="username"></div>
+        <div><label for="p">Mot de passe</label><input id="p" type="password" name="_password" required autocomplete="current-password"></div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <p><button type="submit">Se connecter</button></p>
+    </form>
+    <p class="muted small">Comptes de démonstration : gerant@, serveur@, cuisine@resto.test — mot de passe « password ».</p>
+</div>
+{% endblock %}

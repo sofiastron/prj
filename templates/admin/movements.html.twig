@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mouvements de stock · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Journal des mouvements de stock</h1>
+<a class="btn sm {{ current ? 'sec' : '' }}" href="{{ path('admin_movements') }}">Tous</a>
+{% for t in types %}<a class="btn sm {{ current == t ? '' : 'sec' }}" href="{{ path('admin_movements', {type: t.value}) }}">{{ t.label }}</a>{% endfor %}</div>
+<table>
+    <tr><th>Date</th><th>Ingrédient</th><th>Type</th><th class="r">Quantité</th><th class="r hide-s">Valeur</th><th class="hide-s">Détail</th></tr>
+    {% for m in movements %}
+    <tr><td>{{ m.createdAt|date('d/m H:i') }}</td><td>{{ m.ingredient.name }}</td><td><span class="badge">{{ m.type.label }}</span></td>
+        <td class="r"><span class="{{ m.quantity < 0 ? 'neg' : 'pos' }}">{{ m.quantity > 0 ? '+' : '' }}{{ m.quantity|qty(m.ingredient) }}</span></td>
+        <td class="r hide-s">{{ (m.quantity * m.unitCost)|money }}</td>
+        <td class="hide-s small muted">{% if m.lossReason %}{{ m.lossReason.label }}{% endif %}{% if m.comment %} · {{ m.comment }}{% endif %}{% if m.orderLine %} · commande #{{ m.orderLine.order.id }}{% endif %}{% if m.purchaseOrder %} · achat #{{ m.purchaseOrder.id }}{% endif %}{% if m.inventory %} · inventaire #{{ m.inventory.id }}{% endif %}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">Aucun mouvement.</td></tr>{% endfor %}
+</table>
+<p class="muted small">200 derniers mouvements affichés.</p>
+{% endblock %}

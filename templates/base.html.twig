@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Resto Manager{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+<header class="top">
+    <a class="brand" href="{{ path('app_home') }}">🍽 Resto Manager</a>
+    <nav>
+        {% if is_granted('ROLE_USER') %}
+            {% if is_granted('ROLE_MANAGER') %}<a href="{{ path('app_dashboard') }}">Tableau de bord</a>{% endif %}
+            {% if is_granted('ROLE_SERVER') %}<a href="{{ path('service_tables') }}">Salle</a>{% endif %}
+            {% if is_granted('ROLE_KITCHEN') %}<a href="{{ path('kitchen_index') }}">Cuisine</a><a href="{{ path('losses') }}">Pertes</a>{% endif %}
+            {% if is_granted('ROLE_MANAGER') %}
+                <a href="{{ path('admin_dishes') }}">Plats</a>
+                <a href="{{ path('admin_preparations') }}">Préparations</a>
+                <a href="{{ path('admin_menus') }}">Menus</a>
+                <a href="{{ path('admin_ingredients') }}">Ingrédients</a>
+                <a href="{{ path('admin_purchases') }}">Achats</a>
+                <a href="{{ path('admin_inventories') }}">Inventaires</a>
+                <a href="{{ path('admin_movements') }}">Mouvements</a>
+                <a href="{{ path('admin_suppliers') }}">Fournisseurs</a>
+                <a href="{{ path('admin_tables') }}">Tables</a>
+                <a href="{{ path('admin_users') }}">Utilisateurs</a>
+            {% endif %}
+            <a href="{{ path('carte') }}">Carte</a>
+            <span class="who">{{ app.user.displayName }} · {{ app.user.roleLabel }} · <a href="{{ path('app_logout') }}">Déconnexion</a></span>
+        {% else %}
+            <a href="{{ path('carte') }}">Carte</a>
+            <a class="who" href="{{ path('app_login') }}">Connexion</a>
+        {% endif %}
+    </nav>
+</header>
+<main>
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}<div class="flash {{ type }}">{{ message }}</div>{% endfor %}
+    {% endfor %}
+    {% block body %}{% endblock %}
+</main>
+</body>
+</html>

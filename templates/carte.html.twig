@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% block title %}La carte · Resto Manager{% endblock %}
+{% block body %}
+<h1>La carte</h1>
+<p class="muted">Prix TTC. Les allergènes sont indiqués d'après la composition des plats ; en cas de doute, demandez au personnel.</p>
+
+{% if menus %}
+<h2>Menus</h2>
+<div class="grid g2">
+{% for m in menus %}
+    <div class="card menu-card {{ m.available ? '' : 'unavail' }}">
+        <h3><span>{{ m.menu.name }}</span><span class="price">{{ m.menu.price|money }}</span></h3>
+        {% for c in m.menu.courses %}
+            <p class="small"><strong>{{ c.label }}</strong> : {% for d in c.dishes %}{{ d.name }}{{ not loop.last ? ' · ' : '' }}{% endfor %}</p>
+        {% endfor %}
+        {% if not m.available %}<span class="badge bad">Indisponible actuellement</span>{% endif %}
+    </div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% for s in sections %}
+<h2>{{ s.category.label }}s</h2>
+<div class="grid g2">
+{% for it in s.items %}
+    <div class="card menu-card {{ it.available ? '' : 'unavail' }}">
+        <h3><span>{{ it.dish.name }}</span><span class="price">{{ it.dish.price|money }}</span></h3>
+        {% if it.dish.description %}<p class="muted small">{{ it.dish.description }}</p>{% endif %}
+        <p>
+            {% if not it.available %}<span class="badge bad">Indisponible actuellement</span>{% endif %}
+            {% for a in it.allergens.allergens %}<span class="badge al" title="Allergène">{{ a.label }}</span>{% endfor %}
+            {% for a in it.allergens.traces %}<span class="badge tr" title="Traces possibles">traces : {{ a.label }}</span>{% endfor %}
+            {% if it.allergens.complete and not it.allergens.allergens %}<span class="badge ok">Aucun allergène déclaré</span>{% endif %}
+            {% if not it.allergens.complete %}
+                <span class="badge warn" title="Ingrédients à vérifier : {{ it.allergens.unreliableSources|join(', ') }}">⚠ Information allergènes incomplète — demandez au personnel</span>
+            {% endif %}
+        </p>
+    </div>
+{% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

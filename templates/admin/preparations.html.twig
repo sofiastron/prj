@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+{% block title %}Préparations · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Préparations de base</h1><a class="btn" href="{{ path('admin_preparation_new') }}">+ Nouvelle</a></div>
+<p class="muted">Sauces, pâtes, fonds… réutilisables dans plusieurs plats (et dans d'autres préparations).</p>
+<table>
+    <tr><th>Nom</th><th class="r">Rendement</th><th class="r">Lignes</th><th></th></tr>
+    {% for p in preparations %}
+    <tr><td>{{ p.name }}</td><td class="r">{{ p.yieldQuantity|num(3) }} {{ p.yieldUnit.label }}</td><td class="r">{{ p.lines|length }}</td><td class="r"><a href="{{ path('admin_preparation_edit', {id: p.id}) }}">Modifier</a></td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

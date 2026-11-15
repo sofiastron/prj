@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+{% block title %}Allergènes · {{ ingredient.name }}{% endblock %}
+{% block body %}
+<h1>Allergènes de « {{ ingredient.name }} »</h1>
+<div class="card" style="max-width:640px">
+    <p class="muted small">Statut actuel : <strong>{{ ingredient.allergenStatus.label }}</strong>. Enregistrer ici déclare l'information <em>fiable</em> (source « manuel »), même si la liste est vide — à utiliser pour les produits frais ou quand la fiche Open Food Facts est défaillante.</p>
+    <form method="post">
+        <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+        <div class="grid g3">
+        {% for a in all %}
+            <div><strong>{{ a.label }}</strong><br>
+                <label style="display:inline"><input type="checkbox" name="allergens[]" value="{{ a.value }}" {{ a.value in ingredient.allergens ? 'checked' : '' }}> contient</label><br>
+                <label style="display:inline"><input type="checkbox" name="traces[]" value="{{ a.value }}" {{ a.value in ingredient.traces ? 'checked' : '' }}> traces</label></div>
+        {% endfor %}
+        </div>
+        <p class="actions"><button>Enregistrer la déclaration</button> <a class="btn sec" href="{{ path('admin_ingredients') }}">Retour</a></p>
+    </form>
+</div>
+{% endblock %}

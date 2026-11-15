@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block title %}Cuisine · Resto Manager{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="15">{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Cuisine</h1><span class="muted small">Actualisation automatique toutes les 15 s</span><a class="btn sec sm" href="{{ path('losses') }}">Déclarer une perte</a></div>
+<div class="grid g3">
+{% for key, title in {pending: 'À lancer', preparing: 'En préparation', ready: 'Prêts (en attente de service)'} %}
+    <div class="col">
+        <h2 style="margin-top:0">{{ title }} <span class="badge">{{ columns[key]|length }}</span></h2>
+        {% for l in columns[key] %}
+        <div class="ticket {{ key }}">
+            <div style="display:flex;justify-content:space-between"><strong>{{ l.quantity }} × {{ l.dishName }}</strong><span class="badge">{{ l.order.table.label }}</span></div>
+            {% if l.note %}<div class="small">📝 {{ l.note }}</div>{% endif %}
+            <div class="muted small">il y a {{ ((now.timestamp - l.createdAt.timestamp) / 60)|round }} min{% if l.orderMenu %} · {{ l.orderMenu.menuName }}{% endif %}</div>
+            {% if key == 'pending' %}
+                <form method="post" class="mt" action="{{ path('kitchen_line', {id: l.id, to: 'preparing'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm">Lancer</button></form>
+            {% elseif key == 'preparing' %}
+                <form method="post" class="mt" action="{{ path('kitchen_line', {id: l.id, to: 'ready'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm ok">Prêt</button></form>
+            {% endif %}
+        </div>
+        {% else %}<p class="muted small">Rien.</p>{% endfor %}
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

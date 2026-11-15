@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+{% block title %}Ingrédients · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Ingrédients</h1><a class="btn" href="{{ path('admin_ingredient_new') }}">+ Nouveau</a>
+<span class="muted small">Le stock ne se modifie que par achat, perte ou inventaire (traçabilité).</span></div>
+<table>
+    <tr><th>Ingrédient</th><th class="r">Stock</th><th class="r hide-s">Seuil</th><th class="r hide-s">Coût moyen</th><th class="hide-s">Fournisseur</th><th>Allergènes</th><th></th></tr>
+    {% for i in ingredients %}
+    <tr>
+        <td>{{ i.name }}{% if i.barcode %}<br><span class="muted small">EAN {{ i.barcode }}{% if i.offProductName %} · {{ i.offProductName }}{% endif %}</span>{% endif %}</td>
+        <td class="r"><span class="{{ i.isOut ? 'neg' : '' }}">{{ i.stockQuantity|qty(i) }}</span>{% if i.isLow %} <span class="badge warn">bas</span>{% endif %}</td>
+        <td class="r hide-s">{{ i.minStock|qty(i) }}</td>
+        <td class="r hide-s">{{ (i.averageCost * (i.dimension.value == 'count' ? 1 : 1000))|money }} / {{ i.dimension.value == 'mass' ? 'kg' : (i.dimension.value == 'volume' ? 'l' : 'pce') }}</td>
+        <td class="hide-s">{{ i.supplier ? i.supplier.name : '—' }}</td>
+        <td>
+            <span class="badge {{ i.allergenStatus.value == 'known' ? 'ok' : (i.allergenStatus.value == 'incomplete' ? 'warn' : 'bad') }}">{{ i.allergenStatus.label }}{% if i.allergenSource %} · {{ i.allergenSource == 'off' ? 'OFF' : 'manuel' }}{% endif %}</span>
+            {% for a in i.allergens %}<span class="badge al">{{ a }}</span>{% endfor %}
+            {% if i.offError %}<br><span class="small neg" title="{{ i.offError }}">⚠ {{ i.offError|length > 50 ? i.offError|slice(0, 50) ~ '…' : i.offError }}</span>{% endif %}
+        </td>
+        <td class="r" style="white-space:nowrap">
+            <a href="{{ path('admin_ingredient_edit', {id: i.id}) }}">Modifier</a> ·
+            <a href="{{ path('admin_ingredient_allergens', {id: i.id}) }}">Allergènes</a>
+            {% if i.barcode %}
+            <form class="inline" method="post" action="{{ path('admin_ingredient_off', {id: i.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm sec" title="Interroger Open Food Facts">↻ OFF</button></form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

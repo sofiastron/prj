@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+{% block title %}Achat #{{ po.id }} · Resto Manager{% endblock %}
+{% block body %}
+{% set draft = po.status.value == 'draft' %}
+<div class="actions"><a href="{{ path('admin_purchases') }}">← Achats</a><h1 style="margin:0">Bon de commande #{{ po.id }} — {{ po.supplier.name }}</h1><span class="badge {{ po.status.value == 'received' ? 'ok' : 'warn' }}">{{ po.status.label }}</span></div>
+<table>
+    <tr><th>Ingrédient</th><th class="r">Quantité</th><th class="r">Prix HT / unité</th><th class="r">Total</th><th></th></tr>
+    {% for l in po.lines %}
+    <tr><td>{{ l.ingredient.name }}</td><td class="r">{{ l.quantity|num(3) }} {{ l.unit.label }}</td><td class="r">{{ l.unitPrice|money }} / {{ l.unit.label }}</td><td class="r">{{ l.total|money }}</td>
+        <td class="r">{% if draft %}<form class="inline" method="post" action="{{ path('admin_purchase_line_delete', {id: l.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sm sec">✕</button></form>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Aucune ligne.</td></tr>{% endfor %}
+    <tr><th colspan="3">Total HT</th><th class="r">{{ po.total|money }}</th><th></th></tr>
+</table>
+{% if draft %}
+<form class="card mt" method="post" action="{{ path('admin_purchase_line_add', {id: po.id}) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+    <div class="formrow">
+        <div><label>Ingrédient</label><select name="ingredient" required><option value="">—</option>{% for i in ingredients %}<option value="{{ i.id }}">{{ i.name }}</option>{% endfor %}</select></div>
+        <div><label>Quantité</label><input name="quantity" inputmode="decimal" size="7" required></div>
+        <div><label>Unité</label><select name="unit">{% for u in units %}<option value="{{ u.value }}">{{ u.label }}</option>{% endfor %}</select></div>
+        <div><label>Prix HT par unité</label><input name="price" inputmode="decimal" size="8" required></div>
+        <button type="submit">Ajouter</button>
+    </div>
+</form>
+{% endif %}
+<div class="actions">
+    {% if draft %}<form class="inline" method="post" action="{{ path('admin_purchase_action', {id: po.id, action: 'order'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button>Marquer comme commandé</button></form>{% endif %}
+    {% if po.status.value == 'ordered' %}<form class="inline" method="post" action="{{ path('admin_purchase_action', {id: po.id, action: 'receive'}) }}" onsubmit="return confirm('Réceptionner : le stock sera augmenté.')"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="ok">Réceptionner la marchandise</button></form>{% endif %}
+    {% if po.status.value in ['draft', 'ordered'] %}<form class="inline" method="post" action="{{ path('admin_purchase_action', {id: po.id, action: 'cancel'}) }}"><input type="hidden" name="_token" value="{{ csrf_token('app') }}"><button class="sec">Annuler</button></form>{% endif %}
+</div>
+<p class="muted small">À la réception, le coût moyen pondéré de chaque ingrédient est recalculé : (stock × coût actuel + quantité reçue × prix d'achat) / nouveau stock.</p>
+{% endblock %}

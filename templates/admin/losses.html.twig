@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block title %}Pertes · Resto Manager{% endblock %}
+{% block body %}
+<h1>Pertes</h1>
+<form class="card" method="post" action="{{ path('losses_new') }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+    <div class="formrow">
+        <div><label>Ingrédient</label><select name="ingredient" required><option value="">—</option>{% for i in ingredients %}<option value="{{ i.id }}">{{ i.name }} ({{ i.stockQuantity|qty(i) }})</option>{% endfor %}</select></div>
+        <div><label>Quantité perdue</label><input name="quantity" inputmode="decimal" size="7" required></div>
+        <div><label>Unité</label><select name="unit">{% for u in units %}<option value="{{ u.value }}">{{ u.label }}</option>{% endfor %}</select></div>
+        <div><label>Motif</label><select name="reason">{% for r in reasons %}<option value="{{ r.value }}">{{ r.label }}</option>{% endfor %}</select></div>
+        <div><label>Commentaire</label><input name="comment" maxlength="250"></div>
+        <button type="submit">Déclarer</button>
+    </div>
+</form>
+<table>
+    <tr><th>Date</th><th>Ingrédient</th><th class="r">Quantité</th><th class="r">Valeur</th><th>Motif</th><th class="hide-s">Commentaire</th></tr>
+    {% for m in losses %}
+    <tr><td>{{ m.createdAt|date('d/m H:i') }}</td><td>{{ m.ingredient.name }}</td><td class="r">{{ (0 - m.quantity)|qty(m.ingredient) }}</td><td class="r">{{ (0 - m.quantity * m.unitCost)|money }}</td><td>{{ m.lossReason ? m.lossReason.label : '—' }}</td><td class="hide-s small muted">{{ m.comment }}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">Aucune perte déclarée.</td></tr>{% endfor %}
+</table>
+{% endblock %}

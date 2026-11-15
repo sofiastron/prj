@@ -14,4 +14,9 @@ interface RecipeLineInterface
     public function getQuantity(): string;
 
     public function getUnit(): Unit;
+
+    public function hasPreparation(): bool;
+
+    /** Le composant, quel qu'il soit (ingrédient ou préparation). */
+    public function getComponent(): Ingredient|Preparation|null;
 }

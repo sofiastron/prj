@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% block title %}Plats · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><h1 style="margin:0">Plats</h1><a class="btn" href="{{ path('admin_dish_new') }}">+ Nouveau plat</a></div>
+<table>
+    <tr><th>Plat</th><th>Catégorie</th><th class="r">Prix TTC</th><th class="r hide-s">Coût</th><th class="r hide-s">Marge</th><th class="r">Portions</th><th>Allergènes</th><th></th></tr>
+    {% for r in rows %}
+    <tr class="{{ r.dish.active ? '' : 'unavail' }}">
+        <td>{{ r.dish.name }}{% if not r.dish.active %} <span class="badge">hors carte</span>{% endif %}{% if r.error %}<br><span class="neg small">{{ r.error }}</span>{% endif %}</td>
+        <td>{{ r.dish.category.label }}</td>
+        <td class="r">{{ r.dish.price|money }}</td>
+        <td class="r hide-s">{{ r.cost is not null ? r.cost|money : '—' }}</td>
+        <td class="r hide-s">{% if r.cost is not null %}{% set ht = r.dish.priceExclVat %}{{ ht > 0 ? (((ht - r.cost) / ht) * 100)|round(1) ~ ' %' : '—' }}{% endif %}</td>
+        <td class="r">{% if r.max >= 9999 %}∞{% elseif r.max == 0 %}<span class="badge bad">rupture</span>{% else %}{{ r.max }}{% endif %}</td>
+        <td>{% if r.report %}{% for a in r.report.allergens %}<span class="badge al">{{ a.label }}</span>{% endfor %}{% if not r.report.complete %}<span class="badge warn" title="À vérifier : {{ r.report.unreliableSources|join(', ') }}">⚠ incomplet</span>{% endif %}{% endif %}</td>
+        <td class="r"><a href="{{ path('admin_dish_edit', {id: r.dish.id}) }}">Modifier</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

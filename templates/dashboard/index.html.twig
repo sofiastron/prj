@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tableau de bord · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions">
+    <h1 style="margin:0">Tableau de bord</h1>
+    <span class="muted">Période :</span>
+    {% for d in [7, 14, 30, 90] %}<a class="btn sm {{ d == days ? '' : 'sec' }}" href="{{ path('app_dashboard', {days: d}) }}">{{ d }} j</a>{% endfor %}
+</div>
+
+<div class="grid g4">
+    <div class="card kpi"><div class="v">{{ kpis.revenueTtc|money }}</div><div class="l">Chiffre d'affaires TTC · {{ kpis.orders }} commandes</div></div>
+    <div class="card kpi"><div class="v">{{ kpis.grossMargin|money }}</div><div class="l">Marge brute matière (HT) · {{ kpis.marginPct|num(1) }} %</div></div>
+    <div class="card kpi"><div class="v {{ kpis.lossValue > 0 ? 'neg' : '' }}">{{ kpis.lossValue|money }}</div><div class="l">Pertes (casse, péremption, erreurs)</div></div>
+    <div class="card kpi"><div class="v">{{ kpis.stockValue|money }}</div><div class="l">Valeur du stock</div></div>
+</div>
+
+<div class="grid g2">
+    <div>
+        <h2>Plats les plus vendus</h2>
+        <div class="card">
+        {% set max = top ? top[0].qty : 1 %}
+        {% for t in top %}
+            <div style="margin-bottom:.5rem">
+                <div style="display:flex;justify-content:space-between"><span>{{ t.name }}</span><strong>{{ t.qty }}</strong></div>
+                <div class="bar"><i style="width:{{ (t.qty / max * 100)|round }}%"></i></div>
+            </div>
+        {% else %}<p class="muted">Aucune vente sur la période.</p>{% endfor %}
+        </div>
+    </div>
+    <div>
+        <h2>Suggestions de réapprovisionnement</h2>
+        {% for supplier, items in suggestions %}
+            <div class="card">
+                <div class="actions" style="margin-top:0"><h3>{{ supplier }}</h3>
+                    {% if items[0].ingredient.supplier %}
+                    <form class="inline" method="post" action="{{ path('admin_purchase_from_suggestions', {id: items[0].ingredient.supplier.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+                        <button class="sm" type="submit">Créer le bon de commande</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <table>
+                    <tr><th>Ingrédient</th><th class="r">Stock</th><th class="r">À commander</th><th class="r hide-s">Estimation</th></tr>
+                    {% for s in items %}
+                    <tr>
+                        <td>{{ s.ingredient.name }}<br><span class="muted small">{{ s.reason }}{% if s.daysLeft is not null %} · {{ s.daysLeft|num(1) }} j restants{% endif %}</span></td>
+                        <td class="r">{{ s.ingredient.stockQuantity|qty(s.ingredient) }}</td>
+                        <td class="r"><strong>{{ s.suggested|qty(s.ingredient) }}</strong></td>
+                        <td class="r hide-s">{{ s.estimatedCost|money }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}<div class="card muted">Rien à réapprovisionner pour l'instant.</div>{% endfor %}
+    </div>
+</div>
+
+<h2>Marge par plat</h2>
+<p class="muted small">Marge théorique = prix HT − coût matière au coût moyen actuel. Marge réalisée = ventes de la période avec le coût figé au moment de la vente.</p>
+<table>
+    <tr><th>Plat</th><th class="r">Prix HT</th><th class="r">Coût</th><th class="r">Marge</th><th class="r">Marge %</th><th class="r">Vendus</th><th class="r">Marge réalisée</th></tr>
+    {% for m in margins %}
+    <tr>
+        <td>{{ m.dish.name }}{% if not m.dish.active %} <span class="badge">hors carte</span>{% endif %}</td>
+        <td class="r">{{ m.priceHt|money }}</td><td class="r">{{ m.cost|money }}</td>
+        <td class="r">{{ m.margin|money }}</td>
+        <td class="r"><span class="badge {{ m.marginPct >= 60 ? 'ok' : (m.marginPct >= 40 ? 'warn' : 'bad') }}">{{ m.marginPct|num(1) }} %</span></td>
+        <td class="r">{{ m.sold }}</td><td class="r">{{ m.realizedMargin|money }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

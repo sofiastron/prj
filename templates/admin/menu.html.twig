@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ title }} · Resto Manager{% endblock %}
+{% block body %}
+<div class="actions"><a href="{{ path('admin_menus') }}">← Menus</a><h1 style="margin:0">{{ title }}</h1></div>
+<div class="grid g2">
+<div class="card">{{ form_start(form) }}{{ form_widget(form) }}<p><button type="submit">Enregistrer</button></p>{{ form_end(form) }}</div>
+<div>
+{% if menu.id %}
+    <h2 style="margin-top:0">Temps du menu</h2>
+    {% for c in menu.courses %}
+    <form class="card" method="post" action="{{ path('admin_menu_course_save', {id: c.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+        <h3>{{ c.label }}</h3>
+        <select name="dishes[]" multiple size="6" style="width:100%">
+            {% for d in dishes %}<option value="{{ d.id }}" {{ c.dishes.contains(d) ? 'selected' : '' }}>{{ d.category.label }} — {{ d.name }}</option>{% endfor %}
+        </select>
+        <p class="muted small">Ctrl/Cmd + clic pour choisir plusieurs plats : le client en choisit un.</p>
+        <div class="actions"><button class="sm" type="submit">Enregistrer les choix</button>
+            <button class="sm sec" type="submit" formaction="{{ path('admin_menu_course_delete', {id: c.id}) }}" formnovalidate onclick="return confirm('Supprimer ce temps ?')">Supprimer le temps</button></div>
+    </form>
+    {% endfor %}
+    <form class="card" method="post" action="{{ path('admin_menu_course_add', {id: menu.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('app') }}">
+        <h3>Ajouter un temps</h3>
+        <div class="formrow"><input type="text" name="label" placeholder="Entrée, Plat, Dessert…" required maxlength="60"><button class="sm" type="submit">Ajouter</button></div>
+    </form>
+{% endif %}
+</div>
+</div>
+{% endblock %}

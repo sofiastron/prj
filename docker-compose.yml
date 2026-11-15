@@ -1,0 +1,38 @@
+# Lancement : docker compose up --build   →   http://localhost:8080
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      APP_ENV: dev
+      APP_SECRET: ${APP_SECRET:-dev-only-secret-change-me-0123456789abcdef}
+      DATABASE_URL: "mysql://resto:${DB_PASSWORD:-resto}@db:3306/resto?serverVersion=8.0.32&charset=utf8mb4"
+      DB_PASSWORD: ${DB_PASSWORD:-resto}
+      OFF_BASE_URI: https://world.openfoodfacts.org
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/var/www/html
+      - vendor:/var/www/html/vendor
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: resto
+      MYSQL_USER: resto
+      MYSQL_PASSWORD: ${DB_PASSWORD:-resto}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  dbdata:
+  vendor:
